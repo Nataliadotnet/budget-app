@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fff5f8">
+  <title>My Budget</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Pixelify+Sans:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <h1 class="title"><span id="title-icon"></span><span id="view-title">My Budget</span></h1>
+    </header>
+
+    <!-- Day / week / month / year picker, shown on Home and Stats -->
+    <div id="period-bar" class="period-bar">
+      <div class="segmented" id="period-tabs">
+        <button class="seg-btn" data-period="day">Day</button>
+        <button class="seg-btn" data-period="week">Week</button>
+        <button class="seg-btn" data-period="month">Month</button>
+        <button class="seg-btn" data-period="year">Year</button>
+      </div>
+      <div class="period-nav">
+        <button class="icon-btn" id="prev-period" aria-label="Previous">‹</button>
+        <button class="period-label" id="period-label" title="Go back to today"></button>
+        <button class="icon-btn" id="next-period" aria-label="Next">›</button>
+      </div>
+    </div>
+
+    <main>
+      <!-- HOME -->
+      <section id="view-home" class="view">
+        <div class="card hero">
+          <span class="label">Balance</span>
+          <strong id="balance" class="hero-number">0</strong>
+          <div class="hero-row">
+            <div><span class="label">Income</span><strong id="total-income" class="income-text">0</strong></div>
+            <div><span class="label">Spent</span><strong id="total-expenses" class="expense-text">0</strong></div>
+          </div>
+          <span class="hero-deco" id="hero-deco"></span>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Budgets</h2>
+            <button class="link-btn" data-goto="settings">Edit</button>
+          </div>
+          <div id="budget-list"></div>
+        </div>
+
+        <div class="card">
+          <h2>Transactions</h2>
+          <div id="transaction-list"></div>
+        </div>
+      </section>
+
+      <!-- STATS -->
+      <section id="view-stats" class="view" hidden>
+        <div class="stat-tiles">
+          <div class="card tile">
+            <span class="label">Spent per day</span>
+            <strong id="stat-average">–</strong>
+            <small>on average</small>
+          </div>
+          <div class="card tile">
+            <span class="label">Biggest expense</span>
+            <strong id="stat-biggest">–</strong>
+            <small id="stat-biggest-note">&nbsp;</small>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Spending by category</h2>
+          <div id="category-chart"></div>
+        </div>
+        <div class="card">
+          <h2>Spending over time</h2>
+          <div id="time-chart" class="chart"></div>
+        </div>
+      </section>
+
+      <!-- GOALS -->
+      <section id="view-goals" class="view" hidden>
+        <div id="goal-list"></div>
+        <button class="btn primary wide" id="new-goal">+ New goal</button>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="view-settings" class="view" hidden>
+        <div class="card">
+          <h2>Currency</h2>
+          <select id="currency" aria-label="Currency"></select>
+          <p class="hint below">This only changes how money is shown. It does not convert your amounts.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Budgets</h2>
+            <button class="btn small" id="new-budget">+ Add</button>
+          </div>
+          <p class="hint">Set a spending limit for one category, or for all your spending.</p>
+          <ul id="budget-settings-list" class="plain-list"></ul>
+        </div>
+
+        <div class="card">
+          <h2>Categories</h2>
+          <h3>Spending</h3>
+          <div id="expense-categories" class="chips"></div>
+          <h3>Income</h3>
+          <div id="income-categories" class="chips"></div>
+          <form id="category-form" class="row-form">
+            <input id="category-icon" class="icon-input" placeholder="🙂" maxlength="8" aria-label="Icon (an emoji)">
+            <input id="category-name" placeholder="New category" maxlength="30" required aria-label="Category name">
+            <select id="category-type" aria-label="Category type">
+              <option value="expense">Spending</option>
+              <option value="income">Income</option>
+            </select>
+            <button class="btn small" type="submit">Add</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Backup</h2>
+          <p class="hint">Your data is saved only in this browser. Save a backup file now and then so you don't lose it.</p>
+          <div class="btn-row">
+            <button class="btn" id="export-data">Save backup file</button>
+            <label class="btn">Load backup file<input type="file" id="import-data" accept=".json,application/json" hidden></label>
+          </div>
+          <button class="btn danger-outline" id="reset-data">Delete all data</button>
+        </div>
+      </section>
+    </main>
+
+    <button class="fab" id="add-button" aria-label="Add transaction">+</button>
+
+    <nav class="tabbar">
+      <button data-view="home"><span data-icon="home"></span>Home</button>
+      <button data-view="stats"><span data-icon="stats"></span>Stats</button>
+      <button data-view="goals"><span data-icon="goals"></span>Goals</button>
+      <button data-view="settings"><span data-icon="settings"></span>Settings</button>
+    </nav>
+  </div>
+
+  <!-- Add or edit a transaction -->
+  <dialog id="transaction-dialog">
+    <form id="transaction-form">
+      <h2 id="transaction-title">Add transaction</h2>
+      <div class="segmented type-toggle">
+        <label><input type="radio" name="type" value="expense" checked><span>Spending</span></label>
+        <label><input type="radio" name="type" value="income"><span>Income</span></label>
+      </div>
+      <label class="field">Amount
+        <input type="text" id="amount" class="money-input" inputmode="decimal" autocomplete="off" required>
+      </label>
+      <div class="field">Category
+        <div id="category-picker" class="pick-grid"></div>
+      </div>
+      <label class="field">Date
+        <input type="date" id="date" required>
+      </label>
+      <label class="field">Note
+        <input type="text" id="note" placeholder="Optional" maxlength="100">
+      </label>
+      <div class="dialog-actions">
+        <button type="button" class="btn danger-outline" id="delete-transaction" hidden>Delete</button>
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Add or edit a budget -->
+  <dialog id="budget-dialog">
+    <form id="budget-form">
+      <h2 id="budget-title">Add budget</h2>
+      <label class="field">What
+        <select id="budget-category"></select>
+      </label>
+      <label class="field">Every
+        <select id="budget-period">
+          <option value="day">Day</option>
+          <option value="week">Week</option>
+          <option value="month" selected>Month</option>
+          <option value="year">Year</option>
+        </select>
+      </label>
+      <label class="field">Limit
+        <input type="text" id="budget-limit" class="money-input" inputmode="decimal" autocomplete="off" required>
+      </label>
+      <div class="dialog-actions">
+        <button type="button" class="btn danger-outline" id="delete-budget" hidden>Delete</button>
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Add or edit a savings goal -->
+  <dialog id="goal-dialog">
+    <form id="goal-form">
+      <h2 id="goal-title">New goal</h2>
+      <div class="row-form tight">
+        <input id="goal-icon" class="icon-input" placeholder="⭐" maxlength="8" aria-label="Icon (an emoji)">
+        <input id="goal-name" placeholder="What are you saving for?" maxlength="40" required aria-label="Goal name">
+      </div>
+      <label class="field">Target amount
+        <input type="text" id="goal-target" class="money-input" inputmode="decimal" autocomplete="off" required>
+      </label>
+      <label class="field">Already saved
+        <input type="text" id="goal-saved" class="money-input" inputmode="decimal" autocomplete="off" placeholder="0">
+      </label>
+      <label class="field">Deadline (optional)
+        <input type="date" id="goal-deadline">
+      </label>
+      <div class="dialog-actions">
+        <button type="button" class="btn danger-outline" id="delete-goal" hidden>Delete</button>
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Put money into a goal or take it out -->
+  <dialog id="money-dialog">
+    <form id="money-form">
+      <h2 id="money-title">Goal</h2>
+      <p class="hint" id="money-hint"></p>
+      <label class="field">Amount
+        <input type="text" id="money-amount" class="money-input" inputmode="decimal" autocomplete="off" required>
+      </label>
+      <div class="dialog-actions">
+        <!-- "Add" comes first so pressing Enter adds money -->
+        <button type="submit" class="btn primary" value="add">+ Add</button>
+        <button type="submit" class="btn" value="take">− Take out</button>
+        <button type="button" class="btn" data-close>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Ask "Are you sure?" before deleting something -->
+  <dialog id="confirm-dialog">
+    <form method="dialog">
+      <h2>Are you sure?</h2>
+      <p id="confirm-message"></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn" data-close autofocus>Cancel</button>
+        <button type="submit" class="btn primary danger" id="confirm-yes" value="yes">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script src="data.js"></script>
+  <script src="pixels.js"></script>
+  <script src="charts.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
