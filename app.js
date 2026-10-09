@@ -60,13 +60,13 @@ function toast(message, kind = "info") {
   toastTimer = setTimeout(() => { el.hidden = true; }, 3500);
 }
 
-// Pixel rabbits shown after a new Food, Beauty or Transport expense.
+// Pixel rabbits shown after a new Food, Beauty, Transport, Fun or Other expense.
 // Each letter is one pixel; "." is empty.
 const RABBIT_COLORS = {
   D: "#3d2b35", G: "#b6f0a8", P: "#f7a8c4", R: "#ffb8c6", p: "#ff8fab",
   K: "#2b1d24", W: "#ffffff", r: "#e34948", g: "#d8d2d6",
   N: "#f5e08a", n: "#d9b84a", C: "#8a5a3b", L: "#8fd3f0", Y: "#ffd84d",
-  A: "#c8414f", a: "#8f2433"
+  A: "#c8414f", a: "#8f2433", E: "#3f8f55", e: "#cfe9c6", V: "#b48ef0"
 };
 
 // Rows 0-16 (ears, eyes, nose) are the same for every rabbit
@@ -182,6 +182,66 @@ function pixelStar(x, y) {
   return [[x, y, "W"], [x - 1, y, "Y"], [x + 1, y, "Y"], [x, y - 1, "Y"], [x, y + 1, "Y"]];
 }
 
+// A money rabbit: sunglasses, a big smile with buck teeth.
+// One paw holds a stack of bills up high, the other is out to the side flicking bills away.
+const MONEY_HEAD_PIXELS = [
+  ...NOODLE_RABBIT_PIXELS.slice(0, 10),
+  "...DGGGGGGGGGGGGGGGGGGGGGGGGD...",
+  "...DGGGGGGGGGGGGGGGGGGGGGGGGD...",
+  "...DGGKKKKKKKGGGGGGKKKKKKKGGD...",
+  "...DKKKKKKWKKKKKKKKKKKKWKKKKD...",
+  "...DGGKKKWKKKGGGGGGKKKWKKKGGD...",
+  "...DGGKKKKKKKGGGGGGKKKKKKKGGD...",
+  "...DGGGKKKKKGGGppGGGKKKKKGGGD...",
+  "...DGRRRGGDGGGGGGGGGGDGGRRRGD...",
+  "...DGRRRGGGDDDDDDDDDDGGGRRRGD...",
+  "...DGGGGGGGGGGDWWDGGGGGGGGGGD...",
+  "....DGGGGGGGGGDDDDGGGGGGGGGD....",
+  ".....DDDDDDDDDDDDDDDDDDDDDD....."
+];
+
+// The body and arms, 40 pixels wide. The head (columns 7-32) is drawn on top.
+// Extra empty rows at the bottom leave room for falling bills.
+const MONEY_BODY_PIXELS = [
+  ...Array(11).fill(".".repeat(40)),
+  ".".repeat(34) + "DDDDD" + ".",
+  ".".repeat(34) + "DEeED" + ".",
+  ".".repeat(34) + "DEDED" + ".",
+  ".".repeat(34) + "DWWWD" + ".",
+  ".".repeat(34) + "DEDED" + ".",
+  ".".repeat(34) + "DEeED" + ".",
+  ".".repeat(33) + "DGGGGGD",
+  "....DDD" + ".".repeat(26) + "DGGGGGD",
+  "...DGGGD" + ".".repeat(24) + "DGGGGGD" + ".",
+  "...DGGGD" + ".".repeat(23) + "DGGGGD" + "...",
+  "....DGGGD" + ".".repeat(21) + "DGGGD" + ".....",
+  ".....D" + "G".repeat(25) + "D" + ".".repeat(8),
+  "......D" + "G".repeat(21) + "D" + ".".repeat(11),
+  "......." + "DDDD" + "D" + "G".repeat(16) + "D" + ".".repeat(11),
+  ".".repeat(11) + "D" + "G".repeat(16) + "D" + ".".repeat(11),
+  ".".repeat(11) + "D" + "G".repeat(7) + "PP" + "G".repeat(7) + "D" + ".".repeat(11),
+  ".".repeat(11) + "D" + "G".repeat(16) + "D" + ".".repeat(11),
+  ".".repeat(11) + "DGGGGDDDDDDDDGGGGD" + ".".repeat(11),
+  ".".repeat(12) + "DDDD" + ".".repeat(8) + "DDDD" + ".".repeat(12),
+  ...Array(4).fill(".".repeat(40))
+];
+
+// An arm sticking out sideways: 4 pixels long, starting at column x, with its end on the `side` (-1 left, 1 right)
+function pixelArm(x, y, side) {
+  const end = side < 0 ? x - 1 : x + 4;
+  return [x, x + 1, x + 2, x + 3].flatMap(ax => [[ax, y, "D"], [ax, y + 1, "G"], [ax, y + 2, "D"]]).concat([[end, y + 1, "D"]]);
+}
+
+// One piece of confetti: 2 pixels, lying flat (dx = 1) or standing up (dy = 1)
+function pixelConfetti(x, y, color, dx, dy) {
+  return [[x, y, color], [x + dx, y + dy, color]];
+}
+
+// One small bill, 3 pixels wide and 2 tall
+function pixelBill(x, y) {
+  return [[x, y, "E"], [x + 1, y, "W"], [x + 2, y, "E"], [x, y + 1, "E"], [x + 1, y + 1, "e"], [x + 2, y + 1, "E"]];
+}
+
 const RABBITS = {
   noodles: {
     pixels: NOODLE_RABBIT_PIXELS,
@@ -231,6 +291,37 @@ const RABBITS = {
       [16, 13, "G"], [17, 13, "G"], [18, 13, "G"], [29, 13, "G"], [30, 13, "G"], [31, 13, "G"]
     ],
     text: "Vroom!"
+  },
+  money: {
+    pixels: overlayPixels(MONEY_BODY_PIXELS, MONEY_HEAD_PIXELS, 4),
+    // A: a bill in the left paw. B: it's flicked away. Stars twinkle on both sides.
+    frameA: [...pixelStar(3, 6), ...pixelBill(0, 17)],
+    frameB: pixelStar(36, 6),
+    // Flying bills: each falls and fades on its own loop, a little after the one before
+    drops: [pixelBill(0, 13), pixelBill(4, 14), pixelBill(0, 22), pixelBill(3, 26), pixelBill(33, 24)],
+    text: "Money, money!"
+  },
+  dance: {
+    // The Beauty rabbit without stars. Its head is a separate layer that sways side to side.
+    pixels: [...Array(22).fill(".".repeat(32)), ...BEAUTY_RABBIT_PIXELS.slice(22)],
+    head: BEAUTY_RABBIT_PIXELS.slice(0, 22),
+    // A: left arm high, right arm low. B: the other way round. Stars twinkle in different spots.
+    frameA: [
+      ...pixelArm(3, 22, -1), ...pixelArm(25, 25, 1),
+      ...pixelStar(16, 2), ...pixelStar(1, 6), ...pixelStar(30, 19)
+    ],
+    frameB: [
+      ...pixelArm(25, 22, 1), ...pixelArm(3, 25, -1),
+      ...pixelStar(29, 3), ...pixelStar(1, 18), ...pixelStar(12, 1)
+    ],
+    // Confetti: each piece falls and fades on its own loop
+    drops: [
+      pixelConfetti(1, 2, "p", 1, 0), pixelConfetti(13, 4, "Y", 0, 1), pixelConfetti(18, 3, "L", 0, 1),
+      pixelConfetti(28, 0, "V", 1, 0), pixelConfetti(0, 11, "Y", 0, 1), pixelConfetti(30, 9, "p", 0, 1),
+      pixelConfetti(2, 14, "L", 1, 0), pixelConfetti(29, 14, "r", 1, 0), pixelConfetti(15, 0, "V", 1, 0),
+      pixelConfetti(0, 22, "r", 0, 1), pixelConfetti(30, 25, "Y", 0, 1)
+    ],
+    text: "Party time!"
   }
 };
 
@@ -242,8 +333,8 @@ function showRabbit(name) {
   const rabbit = RABBITS[name];
   document.querySelector(".rabbit-treat")?.remove();
 
-  const base = [];
-  rabbit.pixels.forEach((row, y) => [...row].forEach((c, x) => { if (c !== ".") base.push([x, y, c]); }));
+  const rowsToPixels = rows => rows.flatMap((row, y) => [...row].map((c, x) => [x, y, c]).filter(p => p[2] !== "."));
+  const base = rowsToPixels(rabbit.pixels);
   const width = Math.max(...rabbit.pixels.map(row => row.length));
 
   const el = document.createElement("div");
@@ -254,9 +345,11 @@ function showRabbit(name) {
       ${pixelRects(base)}
       ${pixelRects(rabbit.details || [])}
       <g opacity="0.5">${pixelRects(rabbit.glass || [])}</g>
+      <g class="sway">${pixelRects(rowsToPixels(rabbit.head || []))}</g>
       <g class="frame-a">${pixelRects(rabbit.frameA)}</g>
       <g class="frame-b">${pixelRects(rabbit.frameB)}</g>
       <g class="blink">${pixelRects(rabbit.blink || [])}</g>
+      ${(rabbit.drops || []).map((bill, i) => `<g class="drop" style="animation-delay: ${i * -0.3}s">${pixelRects(bill)}</g>`).join("")}
     </svg>
     <span>${rabbit.text}</span>`;
   el.addEventListener("animationend", event => { if (event.target === el) el.remove(); });
@@ -445,6 +538,8 @@ transactionForm.addEventListener("submit", event => {
     if (transaction.type === "expense" && transaction.category === "Food") showRabbit("noodles");
     if (transaction.type === "expense" && transaction.category === "Beauty") showRabbit("beauty");
     if (transaction.type === "expense" && transaction.category === "Transport") showRabbit("car");
+    if (transaction.type === "expense" && transaction.category === "Other") showRabbit("money");
+    if (transaction.type === "expense" && transaction.category === "Fun") showRabbit("dance");
   }
 
   saveState();
