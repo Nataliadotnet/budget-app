@@ -10,7 +10,10 @@ const PIXEL_COLORS = {
   y: "#ffd54f", // yellow
   o: "#e0a100", // dark yellow
   g: "#7ccf8f", // light green
-  G: "#3f9b5c"  // dark green
+  G: "#3f9b5c", // dark green
+  b: "#5fbf7a", // bunny green
+  l: "#c8f0d2", // bunny shine
+  k: "#1d3b2a"  // bunny outline
 };
 
 const PIXEL_ART = {
@@ -61,6 +64,29 @@ const PIXEL_ART = {
     "..xxxxxx..",
     ".x.xxxx.x.",
     "....xx...."
+  ],
+  logo: [
+    "....kkk....kkk....",
+    "...kbbbk..kbbbk...",
+    "...kbpbk..kbpbk...",
+    "...kbpbk..kbpbk...",
+    "...kbpbkkkkbpbk...",
+    "...kbbbbbbbbbbk...",
+    "..kbbbkbbbbkbbbk..",
+    ".kblbpbbbbbbpbbbk.",
+    ".kblbkkkkkkkkkkk..",
+    ".kbbbk............",
+    ".kbbbbkkkkkkk.....",
+    "..kbbbbbbbbbbk....",
+    "...kbbbbbbbbbbkk..",
+    "....kkkkkkkkbbbbk.",
+    "............kbbbk.",
+    "..kkkk......kbbbk.",
+    ".kbbbbkkkkkkbbbbk.",
+    "..kbbbbbbbbbbbbk..",
+    "...kbbbbbbbbbbk...",
+    "....kbbkkkkbbk....",
+    ".....kk....kk....."
   ],
   heart: [
     ".dd.dd.",

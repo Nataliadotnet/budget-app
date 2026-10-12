@@ -977,6 +977,6 @@ loadState();
 setupMoneyFormat();
 fillCurrencyOptions();
 document.querySelectorAll("[data-icon]").forEach(el => { el.innerHTML = pixelArt(el.dataset.icon, 22); });
-$("title-icon").innerHTML = pixelArt("heart", 28);
+$("title-icon").innerHTML = pixelArt("logo", 26);
 $("hero-deco").innerHTML = pixelArt("sparkle", 12) + pixelArt("coin", 28);
 showView("home");
